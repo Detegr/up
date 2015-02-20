@@ -1,6 +1,7 @@
 package app
 
 import "github.com/revel/revel"
+import "github.com/cbonello/revel-csrf"
 import "os"
 
 func init() {
@@ -11,6 +12,7 @@ func init() {
 		revel.FilterConfiguringFilter, // A hook for adding or removing per-Action filters.
 		revel.ParamsFilter,            // Parse parameters into Controller.Params.
 		revel.SessionFilter,           // Restore and write the session cookie.
+		csrf.CSRFFilter,
 		revel.FlashFilter,             // Restore and write the flash cookie.
 		revel.ValidationFilter,        // Restore kept validation errors and save new ones from cookie.
 		revel.I18nFilter,              // Resolve the requested language

@@ -18,6 +18,7 @@
 	</div>
 	<div class="col-lg-4 well">
 		<form class="form" enctype="multipart/form-data" action="/" method="POST">
+			<input type="hidden" name="csrf_token" value="{{.csrf_token}}"/>
 			<input type="file" name="file"/><br/><br/>
 			<input type="submit" value="Upload ↑" class="btn btn-primary"/>
 		</form>
