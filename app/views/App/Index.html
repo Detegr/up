@@ -18,6 +18,13 @@
       {{template "flash.html" .}}
     </div>
   </div>
+  <div class="well">
+	  <form class="form" enctype="multipart/form-data" action="/" method="POST">
+		  <input type="file" name="file"/>
+		  <br/>
+		  <input type="submit"/>
+	  </form>
+  </div>
 </div>
 
 {{template "footer.html" .}}
