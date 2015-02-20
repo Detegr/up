@@ -20,4 +20,6 @@ func InitDB() {
 
 func init() {
 	revel.OnAppStart(InitDB)
+	revel.TemplateFuncs["uploadedFile"] = func(flash map[string]string) string { return flash["FileName"] }
+	revel.TemplateFuncs["filePresent"] = func(flash map[string]string) bool { return flash["FileName"] != "" }
 }

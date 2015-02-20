@@ -57,6 +57,23 @@ func (c File) Upload(file []byte) revel.Result {
 		c.Flash.Error(err.Error())
 		return c.Redirect(App.Index)
 	}
-	c.Flash.Success("File %s uploaded!", filename)
+	c.Flash.Success("Success!")
+	c.Flash.Out["FileName"] = filename
+	return c.Redirect(App.Index)
+}
+
+func (c File) Serve(filename string) revel.Result {
+	var dbfile db.File
+	println(filename)
+	var err error
+	if err = conn.Where("file_name = ?", filename).First(&dbfile).Error; err == nil {
+		file, err := os.Open(path.Join("uploads", dbfile.FileName))
+		if err != nil {
+			c.Flash.Error(err.Error())
+			return c.Redirect(App.Index)
+		}
+		return c.RenderFile(file, "inline")
+	}
+	c.Flash.Error("File %s not found", filename)
 	return c.Redirect(App.Index)
 }

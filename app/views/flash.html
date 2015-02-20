@@ -1,6 +1,10 @@
 {{if .flash.success}}
 <div class="alert alert-success">
 	{{.flash.success}}
+	{{if (filePresent .flash)}}
+		{{ $file := uploadedFile .flash }}
+		<a href="{{$file}}" alt="{{$file}}">{{$file}}</a> successfully uploaded!
+	{{end}}
 </div>
 {{end}}
 
