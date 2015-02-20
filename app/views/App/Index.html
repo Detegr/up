@@ -2,29 +2,28 @@
 {{template "header.html" .}}
 
 <header class="hero-unit" style="background-color:#A9F16C">
-  <div class="container">
-    <div class="row">
-      <div class="hero-text">
-        <h1>It works!</h1>
-        <p></p>
-      </div>
-    </div>
-  </div>
+	<div class="container">
+		<div class="row">
+			<div class="hero-text">
+				<h1>↑</h1>
+				<p></p>
+			</div>
+		</div>
+	</div>
 </header>
 
 <div class="container">
-  <div class="row">
-    <div class="span6">
-      {{template "flash.html" .}}
-    </div>
-  </div>
-  <div class="well">
-	  <form class="form" enctype="multipart/form-data" action="/" method="POST">
-		  <input type="file" name="file"/>
-		  <br/>
-		  <input type="submit"/>
-	  </form>
-  </div>
+	<div class="col-lg-6">
+		{{template "flash.html" .}}
+	</div>
+	<div class="col-lg-4 well">
+		<form class="form" enctype="multipart/form-data" action="/" method="POST">
+			<input type="file" name="file"/><br/><br/>
+			<input type="submit" value="Upload ↑" class="btn btn-primary"/>
+		</form>
+	</div>
+</div>
+
 </div>
 
 {{template "footer.html" .}}
