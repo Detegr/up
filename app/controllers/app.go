@@ -20,7 +20,6 @@ func (c App) CurrentUser() *db.User {
 
 func (c App) Index() revel.Result {
 	var files []db.File
-	conn.LogMode(true)
 	user := c.CurrentUser()
 	if user != nil {
 		if err := conn.Model(&user).Related(&files).Error; err != nil {
