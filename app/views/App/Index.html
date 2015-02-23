@@ -1,28 +1,31 @@
 {{set . "title" "Home"}}
 {{template "header.html" .}}
 
-<header class="hero-unit" style="background-color:#A9F16C">
-	<div class="container">
-		<div class="row">
-			<div class="hero-text">
-				<h1>↑</h1>
-				<p></p>
-			</div>
-		</div>
-	</div>
-</header>
-
 <div class="container">
 	<div class="col-lg-6">
 		{{template "flash.html" .}}
 	</div>
-	<div class="col-lg-4 well">
-		<form class="form" enctype="multipart/form-data" action="/" method="POST">
-			<input type="hidden" name="csrf_token" value="{{.csrf_token}}"/>
-			<input type="file" name="file"/><br/><br/>
-			<input type="submit" value="Upload ↑" class="btn btn-primary"/>
-		</form>
+	<div class="row">
+		<div class="span12 registration">
+			{{if (userLoggedIn .session)}}
+				<a href="logout"><button class="btn btn-small btn-success">Log out</button></a>
+			{{else}}
+				<a href="register"><button class="btn btn-small btn-success">Register</button></a>
+				<a href="login"><button class="btn btn-small btn-success">Log in</button></a>
+			{{end}}
+			<p></p>
+		</div>
 	</div>
+	{{template "upload.html" .}}
+	{{if eq (len .files) 0}}
+	{{else}}
+		<h3>Files uploaded by you:</h3>
+		<div class="well">
+			{{range .files}}
+				<p><a href='{{.FileName}}'>{{.FileName}}</a></p>
+			{{end}}
+		</div>
+	{{end}}
 </div>
 
 </div>

@@ -14,7 +14,8 @@ func InitDB() {
 	if err != nil {
 		panic("Could not open database")
 	}
-	c.AutoMigrate(&db.File{})
+	c.AutoMigrate(&db.User{}, &db.File{})
+	c.Model(&db.User{}).AddUniqueIndex("idx_name", "name")
 	conn = &c
 }
 
@@ -22,4 +23,5 @@ func init() {
 	revel.OnAppStart(InitDB)
 	revel.TemplateFuncs["uploadedFile"] = func(flash map[string]string) string { return flash["FileName"] }
 	revel.TemplateFuncs["filePresent"] = func(flash map[string]string) bool { return flash["FileName"] != "" }
+	revel.TemplateFuncs["userLoggedIn"] = func(session map[string]string) bool { return session["User"] != "" }
 }

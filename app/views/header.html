@@ -13,5 +13,18 @@
     {{range .moreScripts}}
       <script src="/public/{{.}}" type="text/javascript" charset="utf-8"></script>
     {{end}}
+	{{range .externalScripts}}
+      <script src="{{.}}" type="text/javascript" charset="utf-8"></script>
+	{{end}}
+    <link rel="stylesheet" type="text/css" href="/public/css/up.css">
   </head>
   <body>
+  <header class="hero-unit" style="background-color:#A9F16C">
+  	<div class="container">
+  		<div class="row">
+  			<div class="hero-text">
+				<a href="/"><h1>↑</h1></a>
+  			</div>
+  		</div>
+  	</div>
+  </header>

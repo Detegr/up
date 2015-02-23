@@ -1,11 +1,31 @@
 package controllers
 
-import "github.com/revel/revel"
+import (
+	"github.com/revel/revel"
+	"github.com/Detegr/up/db"
+)
 
 type App struct {
 	*revel.Controller
 }
 
+func (c App) CurrentUser() *db.User {
+	var user db.User
+	if c.Session["User"] != "" {
+		conn.Where("name = ?", c.Session["User"]).First(&user)
+		return &user
+	}
+	return nil
+}
+
 func (c App) Index() revel.Result {
-	return c.Render()
+	var files []db.File
+	conn.LogMode(true)
+	user := c.CurrentUser()
+	if user != nil {
+		if err := conn.Model(&user).Related(&files).Error; err != nil {
+			c.Flash.Error("Sorry, could not fetch your uploaded files.")
+		}
+	}
+	return c.Render(files)
 }

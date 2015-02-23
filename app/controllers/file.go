@@ -10,7 +10,7 @@ import (
 )
 
 type File struct {
-	*revel.Controller
+	App
 }
 
 func WriteFileToDisk(filename string, file []byte) error {
@@ -25,7 +25,7 @@ func WriteFileToDisk(filename string, file []byte) error {
 	return nil
 }
 
-func SaveFileToDb(filename string) (string, error) {
+func SaveFileToDb(c File, filename string) (string, error) {
 	var existing db.File
 	file := db.File { FileName: filename }
 	if err := conn.Where(&file).First(&existing).Error; err == nil {
@@ -34,9 +34,22 @@ func SaveFileToDb(filename string) (string, error) {
 		if len(filename) > 64 {
 			return "", errors.New("Too many files with same name") // I'm lazy
 		}
-		return SaveFileToDb(newfile)
+		return SaveFileToDb(c, newfile)
 	}
-	if err := conn.Create(&file).Error; err != nil {
+	if c.Session["User"] == "" {
+		if err := conn.Create(&file).Error; err != nil {
+			return "", err
+		}
+	} else {
+		var user db.User
+		err := conn.Where(db.User {Name: c.Session["User"]}).First(&user).Error;
+		if err == nil {
+			file.UserId = user.Id
+			if err := conn.Model(&user).Association("Files").Append(&file).Error; err != nil {
+				return "", err
+			}
+			return filename, nil
+		}
 		return "", err
 	}
 	return filename, nil
@@ -48,7 +61,7 @@ func (c File) Upload(file []byte) revel.Result {
 		return c.Redirect(App.Index)
 	}
 	filename := c.Params.Files["file"][0].Filename
-	filename, err := SaveFileToDb(filename)
+	filename, err := SaveFileToDb(c, filename)
 	if err != nil {
 		c.Flash.Error(err.Error())
 		return c.Redirect(App.Index)

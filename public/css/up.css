@@ -1,0 +1,19 @@
+.registration {
+	text-align: right;
+}
+
+.hero-text a {
+	color: black;
+}
+
+.hero-text a:hover {
+	text-decoration: none;
+	color: #777;
+}
+
+footer {
+	width: 100%;
+	text-align: center;
+	position: absolute;
+	bottom: 0;
+}
