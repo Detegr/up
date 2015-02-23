@@ -8,6 +8,7 @@
 	<div class="row">
 		<div class="span12 registration">
 			{{if (userLoggedIn .session)}}
+				<small>Logged in as <strong>{{.session.User}}</strong></small>
 				<a href="logout"><button class="btn btn-small btn-success">Log out</button></a>
 			{{else}}
 				<a href="register"><button class="btn btn-small btn-success">Register</button></a>
