@@ -7,6 +7,8 @@ import (
 	"strings"
 	"errors"
 	"github.com/Detegr/up/db"
+	"mime"
+	"net/http"
 )
 
 type File struct {
@@ -25,32 +27,30 @@ func WriteFileToDisk(filename string, file []byte) error {
 	return nil
 }
 
-func SaveFileToDb(c File, filename string) (string, error) {
+func SaveFileToDb(c File, contenttype string, filename string) (string, error) {
 	var existing db.File
-	file := db.File { FileName: filename }
-	if err := conn.Where(&file).First(&existing).Error; err == nil {
+	if err := conn.Where("file_name = ?", filename).First(&existing).Error; err == nil {
 		ext := path.Ext(filename)
 		newfile := strings.TrimSuffix(filename, ext) + "_" + ext
 		if len(filename) > 64 {
 			return "", errors.New("Too many files with same name") // I'm lazy
 		}
-		return SaveFileToDb(c, newfile)
+		return SaveFileToDb(c, contenttype, newfile)
 	}
-	if c.Session["User"] == "" {
+	file := db.File {
+		FileName: filename,
+		ContentType: contenttype,
+	}
+	user := c.CurrentUser()
+	if user == nil {
 		if err := conn.Create(&file).Error; err != nil {
 			return "", err
 		}
 	} else {
-		var user db.User
-		err := conn.Where(db.User {Name: c.Session["User"]}).First(&user).Error;
-		if err == nil {
-			file.UserId = user.Id
-			if err := conn.Model(&user).Association("Files").Append(&file).Error; err != nil {
-				return "", err
-			}
-			return filename, nil
+		if err := conn.Model(&user).Association("Files").Append(&file).Error; err != nil {
+			return "", err
 		}
-		return "", err
+		return filename, nil
 	}
 	return filename, nil
 }
@@ -61,7 +61,12 @@ func (c File) Upload(file []byte) revel.Result {
 		return c.Redirect(App.Index)
 	}
 	filename := c.Params.Files["file"][0].Filename
-	filename, err := SaveFileToDb(c, filename)
+	contenttype := mime.TypeByExtension(path.Ext(filename))
+	if contenttype == "" {
+		// Try to figure out the content type from the data
+		contenttype = http.DetectContentType(file)
+	}
+	filename, err := SaveFileToDb(c, contenttype, filename)
 	if err != nil {
 		c.Flash.Error(err.Error())
 		return c.Redirect(App.Index)
@@ -85,7 +90,24 @@ func (c File) Serve(filename string) revel.Result {
 			c.Flash.Error(err.Error())
 			return c.Redirect(App.Index)
 		}
-		return c.RenderFile(file, "inline")
+		// For backwards compatibility, fetch and update the content type before serving the file
+		if dbfile.ContentType == "" {
+			contenttype := mime.TypeByExtension(path.Ext(filename))
+			if contenttype == "" {
+				buf := make([]byte, 512) // DetectContentType needs up to 512 bytes of buffer
+				_, err := file.Read(buf)
+				if err != nil {
+					c.Flash.Error("Error retrieving the file, please try again.")
+					return c.Redirect(App.Index)
+				}
+				contenttype = http.DetectContentType(buf)
+			}
+			dbfile.ContentType = contenttype
+			// Gorm does not like my string-type primary key :( Gotta go raw SQL
+			conn.Exec("UPDATE files SET content_type=? WHERE file_name=?", contenttype, filename)
+		}
+		c.Response.ContentType = dbfile.ContentType
+		return c.RenderFile(file, revel.Inline)
 	}
 	c.Flash.Error("File %s not found", filename)
 	return c.Redirect(App.Index)
