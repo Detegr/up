@@ -7,6 +7,7 @@ import (
 	"strings"
 	"errors"
 	"github.com/Detegr/up/db"
+	"github.com/Detegr/up/app/routes"
 	"mime"
 	"net/http"
 )
@@ -110,5 +111,18 @@ func (c File) Serve(filename string) revel.Result {
 		return c.RenderFile(file, revel.Inline)
 	}
 	c.Flash.Error("File %s not found", filename)
+	return c.Redirect(App.Index)
+}
+
+func (c File) Delete(filename string) revel.Result {
+	user := c.CurrentUser()
+	if user == nil {
+		return c.Redirect(routes.File.Serve(filename))
+	}
+	if err := conn.Where("file_name = ? AND user_id = ?", filename, user.Id).Delete(db.File{}).Error; err == nil {
+		c.Flash.Success("File %s deleted.", filename)
+		return c.Redirect(App.Index)
+	}
+	c.Flash.Error("Could not delete the file. Please try again.")
 	return c.Redirect(App.Index)
 }

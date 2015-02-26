@@ -22,7 +22,7 @@ func (c App) Index() revel.Result {
 	var files []db.File
 	user := c.CurrentUser()
 	if user != nil {
-		if err := conn.Model(&user).Order("created").Related(&files).Error; err != nil {
+		if err := conn.Model(&user).Order("created desc").Related(&files).Error; err != nil {
 			c.Flash.Error("Sorry, could not fetch your uploaded files.")
 		}
 	}

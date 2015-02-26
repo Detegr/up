@@ -21,7 +21,5 @@ GET     /register                               User.Register
 POST    /register                               User.ValidateRegistration
 GET     /logout                                 User.Logout
 
+GET     /:filename/delete                       File.Delete
 GET     /:filename                              File.Serve
-
-# Catch all
-*       /:controller/:action                    :controller.:action
