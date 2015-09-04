@@ -10,6 +10,7 @@ import (
 	"github.com/Detegr/up/app/routes"
 	"mime"
 	"net/http"
+	"time"
 )
 
 type File struct {
@@ -86,6 +87,15 @@ func (c File) Serve(filename string) revel.Result {
 	println(filename)
 	var err error
 	if err = conn.Where("file_name = ?", filename).First(&dbfile).Error; err == nil {
+		if dbfile.Accessed.Before(time.Now().AddDate(0, 0, -7)) {
+			// Cannot use dbfile here either because of the primary key :G
+			if err = conn.Where("file_name = ?", filename).Delete(db.File{}).Error; err != nil {
+				c.Flash.Error("Could not serve your file, try again")
+				return c.Redirect(App.Index)
+			}
+			c.Flash.Error("The file has been deleted because of inactivity")
+			return c.Redirect(App.Index)
+		}
 		file, err := os.Open(path.Join("uploads", dbfile.FileName))
 		if err != nil {
 			c.Flash.Error(err.Error())
@@ -107,6 +117,7 @@ func (c File) Serve(filename string) revel.Result {
 			// Gorm does not like my string-type primary key :( Gotta go raw SQL
 			conn.Exec("UPDATE files SET content_type=? WHERE file_name=?", contenttype, filename)
 		}
+		conn.Exec("UPDATE files SET accessed=? WHERE file_name=?", time.Now(), filename);
 		c.Response.ContentType = dbfile.ContentType
 		return c.RenderFile(file, revel.Inline)
 	}
